@@ -1,0 +1,95 @@
+---
+name: ae-motion-replicator
+description: Replicate 2D game/UI animations from reference GIFs into Adobe After Effects automatically. Covers GIF frame-by-frame breakdown, minimal static sprite-sheet GPT prompt generation, alpha-based sprite splitting with edge decontamination, and language-independent ExtendScript automation for After Effects (including keyframe easing, pure-alpha VFX without black fringes, and .aep export). Use when the user asks to analyze a reference animation GIF, generate sprite-sheet prompts for AE, split sprite sheets into transparent PNGs, or build/replicate an animation in After Effects.
+---
+
+# AE Motion Replicator (After Effects 动效复刻流水线)
+
+一套专注于 **Adobe After Effects** 的 2D 游戏/UI 动效复刻标准工作流：
+`参考 GIF 拆解` → `GPT 透明分件合图提示词` → `Python 自动切图去杂边` → `ExtendScript 自动建合成打关键帧` → `视觉验收`。
+
+---
+
+## Step 1：参考 GIF 逐帧拆解
+
+拿到参考 GIF 路径后，先用内置脚本导出帧序列、元数据与带帧号标注的联系表：
+
+```bash
+python3 ~/.agents/skills/ae-motion-replicator/scripts/split_sprites.py inspect-gif <gif_path> <out_dir>
+```
+
+用 `read_file` 查看生成的 `contact_sheet.png` 及关键帧，输出 3 项核心结论：
+1. **基础参数与动作节奏**：总帧数、总时长、单帧延迟（含停顿帧）、5 段节奏（待机 → 挤压蓄力 → 弹开/爆发 → 过冲回弹 → 淡出重置）。
+2. **AE 可程序化生成的特效（无需出图）**：径向光晕、垂直/放射光束、四角星芒粒子、高光泛光（Bloom）。
+3. **最少静态透明分件清单**：通常只需 2–4 个结构件（例如：底座、闭合态组件、开启态组件）。
+
+---
+
+## Step 2：生成透明分件精灵合图（有生图能力则直出，否则输出提示词）
+
+根据 Step 1 确定的「最少静态透明分件清单」，构造下方结构化英文提示词：
+
+```text
+Create a 2D casual mobile game UI sprite sheet (component sheet) of <主体描述>, arranged horizontally with <N> separate static parts on a 100% pure transparent background (PNG with alpha channel).
+
+Art Style & Perspective:
+- <画风描述，如：Casual mobile game 2D hand-painted vector-like illustration style, clean smooth shading, rounded bevels>.
+- Consistent <视角描述，如：3/4 top-down angled> perspective across all parts, matching scale and lighting.
+
+Layout & Separation Rules (CRITICAL):
+- Place the <N> parts side by side in a single horizontal row with generous empty transparent spacing between each part. No overlapping, no touching edges.
+- Pure transparent background ONLY. NO checkerboard pattern, NO gray/white grid, NO drop shadows, NO ground shadows, NO glow, NO light beams, NO sparkles, NO particles, NO text, NO guide lines.
+
+The <N> Exact Parts (from left to right):
+1. [Left] <分件 1 名称与结构细节>
+2. [Center] <分件 2 名称与结构细节>
+3. [Right] <分件 3 名称与结构细节>
+```
+
+### 执行策略（按环境能力自动分支）
+1. **环境具备生图能力时（优先直出）**：
+   - 若当前 Agent 拥有生图子智能体（如 `image-generator`）或生图 MCP/工具，**直接调用生图**，无需让用户手动去外部生图；
+   - 生成后先用 `read_file` 或 Python 检查透明通道与分件间距：若结果达标，直接带着生成的图片路径进入 **Step 3**；若工具不支持透明底或分件粘连严重，再把提示词交给用户用 GPT 精修。
+2. **环境无生图能力时（降级输出提示词）**：
+   - 将上述填好内容的英文提示词直接输出给用户，并附带防翻车追加句，等待用户发给 GPT 生图后回传合图文件再继续 **Step 3**。
+
+> **防翻车追加句**：若生图结果带了棋盘格背景或零件比例不一致，追加：`Remove the checkerboard background completely and output true alpha transparency; keep the width of all parts consistent so they align cleanly.`
+
+---
+
+## Step 3：透明合图自动切分与边缘去杂色
+
+拿到 GPT 生成的透明合图后，运行内置脚本自动按透明通道横向投影切分（并用距离变换替换半透明边缘像素 RGB，彻底消除白边/黑边杂色）：
+
+```bash
+python3 ~/.agents/skills/ae-motion-replicator/scripts/split_sprites.py split <sprite_sheet.png> <out_dir> [--names part_0,part_1,part_2]
+```
+
+切分后务必用 `read_file` 目视检查每个独立 PNG 的完整度与边缘干净度。
+
+---
+
+## Step 4：After Effects 自动建合成与打关键帧
+
+使用 `osascript -e 'tell application "Adobe After Effects 2027" to DoScriptFile "<script.jsx>"'`（可先用 `after-effects` MCP 检查桥接连通性）。
+
+### ExtendScript 编写铁律（避坑清单）
+1. **避免保存弹窗阻塞**：新建工程前先静默关闭旧工程：
+   ```javascript
+   if (app.project) app.project.close(CloseOptions.DO_NOT_SAVE_CHANGES);
+   var proj = app.newProject();
+   ```
+2. **强制使用语言无关 Match Name**（兼容中文/英文 AE）：
+   - 变换：`ADBE Transform Group`、`ADBE Anchor Point`、`ADBE Position`、`ADBE Scale`、`ADBE Rotate Z`、`ADBE Opacity`
+   - 效果：`ADBE Effect Parade`、`ADBE Brightness & Contrast 2`、`ADBE Gaussian Blur 2`、`ADBE Glo2`
+   - 矢量/蒙版：`ADBE Root Vectors Group`、`ADBE Vector Group`、`ADBE Vectors Group`、`ADBE Vector Shape - Star`、`ADBE Vector Graphic - Fill`、`ADBE Mask Parade`、`ADBE Mask Atom`
+3. **`setTemporalEaseAtKey` 数组长度规则**：
+   - `TwoD_SPATIAL`（Position）、`ThreeD_SPATIAL`、`OneD`（Opacity / Rotation）必须传 **1 元数组** `[ease]`；
+   - 非空间二维属性 `TwoD`（Scale）必须传 **2 元数组** `[ease, ease]`。
+4. **透明底特效防黑边与防矩形裁切**：
+   - 导入 PNG 时显式设置 `item.mainSource.alphaMode = AlphaMode.STRAIGHT;`。
+   - **禁止**对小尺寸 Shape Layer 直接加超大半径 `Gaussian Blur 2`（易在图层紧密包围盒处出现矩形硬裁切）；改用 **Comp 尺寸 Solid + 羽化蒙版**，或在同 Shape Layer 内垫一层 `0%` 透明度的全尺寸矩形撑开边界。
+   - 光效优先使用 `Normal` 混合模式 + 纯 Alpha 渐变/羽化（避免 `Add`/`Screen` 在纯透明导出时失真或产生黑边）；星芒使用矢量 `Polystar`（4 角星）+ 柔光。
+5. **打开预览、保存与视觉验收**：
+   - 结尾调用 `comp.openInViewer();` 并 `proj.save(new File(aepPath));`。
+   - 导出 2–4 个关键时间点 PNG（`comp.saveFrameToPng(time, file)`），用 `read_file` 验收无黑边、无裁切、对齐精准后再交付用户。
