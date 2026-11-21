@@ -90,8 +90,8 @@ npm install && npm run build && npm run install-bridge
 ```
 > 使用前在 AE 顶部菜单打开 **窗口 → 扩展 / 脚本 → MCP Bridge Auto**。
 
-### 3. 配置 Figma 原生 Motion [Beta] MCP
-在 `mcp_config.json` 中添加：
+### 3. 配置 Figma 原生 Motion [Beta] MCP（第三方开源依赖）
+依赖开源项目：[LucasGorgal/localfig](https://github.com/LucasGorgal/localfig)（MIT License）。在 `mcp_config.json` 中添加：
 ```json
 {
   "mcpServers": {
