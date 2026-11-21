@@ -78,6 +78,49 @@
 
 ---
 
+## 分步手动操作提示词（不装 Skill 也能直接用）
+
+如果你想自己一步步控制节奏，或者只发给普通对话 AI，直接按顺序复制以下 3 段提示词即可：
+
+### 第 1 步：拆解参考动效（GIF / 视频）
+```text
+帮我拆解这个动效（路径：<你的GIF路径>）：
+1. 分析它的总帧数、总时长、单帧间隔、动作节奏（蓄力/爆发/回弹/停顿），以及用到了哪些光效和粒子；
+2. 如果要复刻它，最少需要拆成哪几个静态透明分件？（能用软件生成的光晕、光柱、星芒、粒子不用出图；特殊立体艺术字单独算分件）；
+3. 写出直接发给 GPT 生图的英文提示词：要求一次生成一张纯透明背景、同画风同视角、间距拉开的「分件精灵合图」。
+```
+
+### 第 2 步：GPT 透明分件精灵合图模板
+```text
+Create a 2D casual mobile game UI sprite sheet (component sheet) of <主体描述>, arranged horizontally with <N> separate static parts on a 100% pure transparent background (PNG with alpha channel).
+
+Art Style & Perspective:
+- <画风描述，如：Casual mobile game 2D hand-painted vector-like illustration style, clean smooth shading, rounded bevels>.
+- Consistent <视角描述，如：3/4 top-down angled> perspective across all parts, matching scale and lighting.
+
+Layout & Separation Rules (CRITICAL):
+- Place the <N> parts side by side in a single horizontal row with generous empty transparent spacing between each part. No overlapping, no touching edges.
+- Pure transparent background ONLY. NO checkerboard pattern, NO gray/white grid, NO drop shadows, NO ground shadows, NO glow, NO light beams, NO sparkles, NO particles, NO text, NO guide lines.
+
+The <N> Exact Parts (from left to right):
+1. [Left] <分件1名称及结构描述>
+2. [Center] <分件2名称及结构描述>
+3. [Right] <分件3名称及结构描述>
+```
+*(若生图带了棋盘格背景或零件宽度不一致，追加：)*
+
+### 第 3 步：自动切图去白边 + 生成动效（三选一）
+```text
+这是我生成的透明分件合图（路径：<合图路径>），请帮我：
+1. 用 Python 按透明通道自动裁切拆分成独立的透明 PNG 分件，并清理边缘半透明白边杂色；
+2. 按第 1 步拆解的节奏搭建动效（任选其一）：
+   - [AE 版] 通过 ExtendScript / after-effects MCP 自动导入 AE，对齐锚点、打好挤压拉伸与过冲关键帧，用纯 Alpha 渐变/矢量补充光束与星芒（防黑边/防裁切），打开合成并保存 .aep；
+   - [Figma Motion 版] 通过 localfig MCP 传图并调用 Figma 原生 Motion [Beta] API（applyManualKeyframeTrack）写入时间轴关键帧；
+   - [轻量 Web 版] 生成单文件 HTML + GSAP 动效（暴露 window.__seek(t)），并用 Playwright + ffmpeg 导出透明 GIF。
+```
+
+---
+
 ## 手动安装与依赖清单
 
 ### 1. 安装 Skill
