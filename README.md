@@ -1,26 +1,40 @@
 # AE & Figma Motion Replicator
 
-> **给 AI 一张参考 GIF，全自动拆帧分析 → 生成/切分透明分件 → 写入 Adobe After Effects 合成 & Figma 原生 Motion [Beta] 时间轴关键帧！**
+> **给 AI 一张参考 GIF，全自动拆帧分析 → AI 生图并切分透明分件 → 自动写入 Adobe After Effects 合成 & Figma 原生 Motion [Beta] 时间轴关键帧！**
 
 ---
 
-## 实测还原效果展示
+## 实测效果对比（原图 GIF vs AI 全自动复刻 GIF）
 
-### 案例一：游戏「恭喜通关」破土奖杯动效（After Effects 全自动搭建）
-从参考 GIF 自动拆解出「奖杯 + 土堆」2 个静态分件，AI 生图并自动抠除白底去杂边后，通过 ExtendScript 自动在 AE 中完成：**破土遮罩弹出 + 弹性回弹 + 纯 Alpha 爆光白烟 + 12 枚红绿彩纸屑 + 双层描边艺术字扫光 + 尾帧星芒**。
+以下 **4 个完整游戏 UI 动效**均由本 Skill 自动拆解、生成/切分透明分件，并在 **Adobe After Effects 2027** 中全自动打帧渲染导出：
 
-| 破土爆发（0.24s） | 艺术字斜向扫光（0.68s） | 收尾星芒闪烁（0.98s） |
-| :---: | :---: | :---: |
-| ![破土爆发](assets/trophy_ae_burst.png) | ![艺术字扫光](assets/trophy_ae_sweep.png) | ![星芒闪烁](assets/trophy_ae_sparkle.png) |
+### 1.「恭喜通关」破土金奖杯动效
+> 自动拆解为「奖杯 + 土堆」2 个静态分件，AE 内自动搭建破土遮罩弹出、弹性回弹、纯 Alpha 爆光白烟、12 枚彩纸屑抛物线、双层描边艺术字扫光与收尾星芒。
 
----
-
-### 案例二：卡通宝箱开启动效（AE + Figma 原生 Motion [Beta] 双端复刻）
-3 分件（底座 + 闭合盖 + 开启盖）自动切分去白边后，直接通过 `localfig` MCP 调用 Figma 官方 **Motion [Beta] Plugin API**，一次性将 17 个图层的 3.06s 关键帧轨道写入时间轴，按空格即可预览。
-
-| 开盖爆发光束（Figma Motion） | 星芒粒子扩散（Figma Motion） |
+| 参考原图 GIF | AI 全自动复刻效果（AE 渲染） |
 | :---: | :---: |
-| ![开盖爆发](assets/chest_figma_burst.png) | ![星芒扩散](assets/chest_figma_sparkles.png) |
+| ![恭喜通关原图](assets/trophy_original.gif) | ![恭喜通关复刻](assets/trophy_replicated.gif) |
+
+### 2. 卡通宝箱开启动效（AE + Figma Motion 双端复刻）
+> 自动拆解为「底座 + 闭合盖 + 开启盖」3 个透明分件，实现挤压蓄力 → 瞬切开盖过冲 → 径向光晕 & 垂直光束 → 四角星芒扩散。
+
+| 参考原图 GIF | AI 全自动复刻效果（AE 渲染） |
+| :---: | :---: |
+| ![宝箱开启原图](assets/chest_original.gif) | ![宝箱开启复刻](assets/chest_replicated.gif) |
+
+### 3. 胜利徽章展翼横幅动效
+> 自动拆解皇冠、双翼、飘带、盾牌底座等透明分件，AE 内自动完成展翼弹性展开、金色扫光、金币喷发与粒子闪烁。
+
+| 参考原图 GIF | AI 全自动复刻效果（AE 渲染） |
+| :---: | :---: |
+| ![胜利徽章原图](assets/victory_original.gif) | ![胜利徽章复刻](assets/victory_replicated.gif) |
+
+### 4. 炸弹炸塔失败动效
+> 自动拆解石塔、炸弹、旗帜等 13 个透明分件，AE 内自动完成炸弹抛物线砸塔、爆炸冲击波、烟尘与碎片四溅。
+
+| 参考原图 GIF | AI 全自动复刻效果（AE 渲染） |
+| :---: | :---: |
+| ![炸弹炸塔原图](assets/bomb_original.gif) | ![炸弹炸塔复刻](assets/bomb_replicated.gif) |
 
 ---
 
@@ -41,11 +55,9 @@
 
 ## 手动安装与依赖清单
 
-如果你想手动配置，按以下 3 步即可：
-
 ### 1. 安装 Skill
-- **方式 A（推荐）**：直接下载 [`dist/ae-motion-replicator.skill`](dist/ae-motion-replicator.skill) 导入到你的 Agent。
-- **方式 B（Git）**：
+- **方式 A（直接导入）**：下载 [`dist/ae-motion-replicator.skill`](dist/ae-motion-replicator.skill) 导入到你的 Agent。
+- **方式 B（Git 克隆）**：
   ```bash
   git clone https://github.com/amiduai/ae-motion-replicator.git ~/.agents/skills/ae-motion-replicator
   pip install pillow numpy scipy
@@ -96,6 +108,6 @@ ae-motion-replicator/
 │   └── split_sprites.py            # GIF 逐帧联系表工具 & 透明合图自动切分去白边脚本
 ├── dist/
 │   └── ae-motion-replicator.skill  # 打包好的 .skill 安装包，可直接下载导入
-├── assets/                         # README 效果展示图
+├── assets/                         # 4 组原图 GIF vs 复刻 GIF 对比素材
 └── README.md
 ```
