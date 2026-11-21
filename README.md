@@ -45,9 +45,9 @@
 
 ---
 
-## 傻瓜式一键安装（按需二选一，复制发给你的 AI 助手）
+## 傻瓜式一键安装（按需三选一，复制发给你的 AI 助手）
 
-无论你使用的是哪种 AI Agent，不用自己敲命令，按你常用的软件**二选一**复制下方提示词发给 AI 即可自动配好：
+无论你使用的是哪种 AI Agent，不用自己敲命令，按你常用的软件**三选一**复制下方提示词发给 AI 即可自动配好：
 
 ### 方案 A：仅安装 After Effects 版
 ```text
@@ -65,6 +65,15 @@
 2. 检查并安装 Python 依赖：pip install pillow numpy scipy；
 3. 配置 Figma MCP（https://github.com/LucasGorgal/localfig）：在我的 MCP 配置文件中加入 localfig（command: "npx", args: ["-y", "localfig"]）；
 4. 检查配置无误后，告诉我如何在 Figma Desktop 中导入 ~/.localfig/plugin/manifest.json 开启桥接面板。
+```
+
+### 方案 C：极简轻量版（HTML + GSAP，免装 AE / Figma）
+```text
+请帮我一键安装并配置 https://github.com/amiduai/ae-motion-replicator 的轻量 Web 动效环境：
+1. 克隆仓库并安装到你当前 Agent 对应的全局 Skills 目录；
+2. 安装 Python 依赖：pip install pillow numpy scipy playwright && playwright install chromium；
+3. 检查本机是否已安装 ffmpeg（如未安装则提示或通过 brew/apt 安装）；
+4. 全部完成后告诉我，以后我发参考 GIF 就可以直接走 HTML + GSAP 方案生成浏览器可预览代码并导出透明 GIF。
 ```
 
 ---
@@ -121,7 +130,8 @@ npm install && npm run build && npm run install-bridge
 ae-motion-replicator/
 ├── SKILL.md                        # Skill 主指令（GIF 拆解 / 生图 / 切图 / AE & Figma Motion 规范）
 ├── scripts/
-│   └── split_sprites.py            # GIF 逐帧联系表工具 & 透明合图自动切分去白边脚本
+│   ├── split_sprites.py            # GIF 逐帧联系表工具 & 透明合图自动切分去白边脚本
+│   └── render_web_gif.py           # 轻量 HTML/GSAP 确定性逐帧导出透明 GIF/MP4 脚本
 ├── dist/
 │   └── ae-motion-replicator.skill  # 打包好的 .skill 安装包，可直接下载导入
 ├── assets/                         # 5 组原图 vs 复刻 GIF 对比素材

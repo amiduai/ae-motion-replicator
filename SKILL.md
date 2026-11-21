@@ -1,12 +1,12 @@
 ---
 name: ae-motion-replicator
-description: Replicate 2D game/UI animations from reference GIFs into Adobe After Effects or Figma native Motion [Beta] automatically. Covers GIF frame-by-frame breakdown, adaptive sprite-sheet generation (direct image generation or GPT prompt fallback), alpha-based sprite splitting with edge decontamination, language-independent ExtendScript automation for After Effects, and Figma Motion [Beta] keyframe automation via localfig MCP. Use when the user asks to analyze a reference animation GIF, generate sprite-sheet prompts, split sprite sheets into transparent PNGs, or replicate an animation in After Effects or Figma Motion.
+description: Replicate 2D game/UI animations from reference GIFs into Adobe After Effects, Figma native Motion [Beta], or lightweight HTML+GSAP web animations automatically. Covers GIF frame-by-frame breakdown, adaptive sprite-sheet generation, alpha-based sprite splitting with edge decontamination, ExtendScript automation for AE, Figma Motion [Beta] via localfig MCP, and zero-software HTML+GSAP rendering via Playwright+ffmpeg. Use when the user asks to analyze a reference animation GIF, generate sprite-sheet prompts, split sprite sheets, or replicate an animation in AE, Figma Motion, or HTML/GSAP.
 ---
 
-# AE & Figma Motion Replicator (2D 动效复刻流水线)
+# AE / Figma / Web Motion Replicator (2D 动效复刻流水线)
 
-一套同时支持 **Adobe After Effects** 与 **Figma 原生 Motion [Beta]** 的 2D 游戏/UI 动效复刻标准工作流：
-`参考 GIF 拆解` → `透明分件合图（直出或提示词）` → `Python 自动切图去杂边` → `AE / Figma Motion 自动写入关键帧` → `视觉验收`。
+一套支持 **Adobe After Effects**、**Figma 原生 Motion [Beta]** 与 **轻量 HTML+GSAP（零重型软件）** 三端输出的 2D 动效复刻工作流：
+`参考 GIF 拆解` → `透明分件合图（直出或提示词）` → `Python 自动切图去杂边` → `AE / Figma Motion / HTML+GSAP 自动构建` → `视觉验收`。
 
 ---
 
@@ -120,3 +120,25 @@ python3 ~/.agents/skills/ae-motion-replicator/scripts/split_sprites.py split <sp
    - **1 帧硬切技巧**：在 `t - 0.001` 与 `t` 处放置一对 `LINEAR` 关键帧实现瞬切（如 `0.779s: 1` → `0.780s: 0`）。
    - **纯 Alpha 防黑边光效**：径向光晕用外环同色 `a: 0` 渐变 + `LAYER_BLUR`；星芒用矢量 `STAR`（4 角）+ 金色柔光 `DROP_SHADOW`。
 4. **视觉验收**：调用 `figma_export` 导出关键帧 PNG，用 `read_file` 验收后选中主画板聚焦，提示用户按空格即可预览。
+
+
+---
+
+## Step 4C：轻量 Web 引擎自动搭建（HTML + GSAP，零重型软件依赖）
+
+当用户不需要打开 AE 或 Figma，希望用最轻量方式直接预览、嵌入前端或导出透明 GIF/MP4 时：
+
+1. **生成单文件动效 HTML**：
+   - 将切分好的透明 PNG 分件以相对路径（或 Base64）引入绝对定位舞台容器；
+   - 使用 **GSAP**（`gsap.timeline({ repeat: -1 })`）精确编写挤压拉伸（`scaleX/scaleY` + `transformOrigin: "bottom center"`）、过冲回弹（`back.out` / `elastic.out`）、径向渐变光晕（`radial-gradient(..., transparent)` 无黑边）、垂直光柱与 SVG 4 角星芒粒子；
+   - **必须暴露确定性时间跳转钩子**，方便无头浏览器逐帧导出：
+     ```javascript
+     window.__seek = (t) => { tl.pause(); tl.seek(t); };
+     ```
+2. **浏览器预览与确定性导出 GIF/MP4**：
+   - 用户可直接双击 HTML 在浏览器实时观看（支持直接复用进 Web/小程序 WebView）；
+   - 如需导出 GIF / MP4（支持 `--transparent` 纯透明底），运行内置脚本：
+     ```bash
+     python3 ~/.agents/skills/ae-motion-replicator/scripts/render_web_gif.py <index.html> <out.gif> --duration 3.06 --fps 25 --width 480 --height 480 --transparent
+     ```
+   - 导出后用 `read_file` 查看 GIF 或抽帧检查，确认无闪烁与裁切问题。
