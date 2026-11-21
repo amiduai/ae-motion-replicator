@@ -107,7 +107,7 @@ The <N> Exact Parts (from left to right):
 2. [Center] <分件2名称及结构描述>
 3. [Right] <分件3名称及结构描述>
 ```
-*(若生图带了棋盘格背景或零件宽度不一致，追加：)*
+*(若生图带了棋盘格背景或零件宽度不一致，追加：`Remove the checkerboard background completely and output true alpha transparency; keep the width of all parts consistent so they align cleanly.`)*
 
 ### 第 3 步：自动切图去白边 + 生成动效（三选一）
 ```text
