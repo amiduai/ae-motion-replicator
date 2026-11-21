@@ -47,12 +47,12 @@
 
 ## 傻瓜式一键安装（按需二选一，复制发给你的 AI 助手）
 
-如果你使用的是 **Antigravity / Claude Code / Cursor** 等 AI Agent，不用自己敲命令，按你常用的软件**二选一**复制下方提示词发给 AI 即可自动配好：
+无论你使用的是哪种 AI Agent，不用自己敲命令，按你常用的软件**二选一**复制下方提示词发给 AI 即可自动配好：
 
 ### 方案 A：仅安装 After Effects 版
 ```text
 请帮我一键安装并配置 https://github.com/amiduai/ae-motion-replicator 的 After Effects 环境：
-1. 克隆仓库到 ~/.agents/skills/ae-motion-replicator（如使用 Antigravity 请同步软链到 ~/.gemini/antigravity/skills/ae-motion-replicator）；
+1. 克隆仓库并安装到你当前 Agent 对应的全局 Skills 目录；
 2. 检查并安装 Python 依赖：pip install pillow numpy scipy；
 3. 安装 After Effects MCP（https://github.com/Dakkshin/after-effects-mcp）：克隆到 ~/mcp-servers/after-effects-mcp，执行 npm install && npm run build && npm run install-bridge，并写入我的 MCP 配置文件（node ~/mcp-servers/after-effects-mcp/build/index.js）；
 4. 检查配置无误后，告诉我最后需要在 AE 里手动打开哪个桥接面板。
@@ -61,7 +61,7 @@
 ### 方案 B：仅安装 Figma 原生 Motion [Beta] 版
 ```text
 请帮我一键安装并配置 https://github.com/amiduai/ae-motion-replicator 的 Figma Motion 环境：
-1. 克隆仓库到 ~/.agents/skills/ae-motion-replicator（如使用 Antigravity 请同步软链到 ~/.gemini/antigravity/skills/ae-motion-replicator）；
+1. 克隆仓库并安装到你当前 Agent 对应的全局 Skills 目录；
 2. 检查并安装 Python 依赖：pip install pillow numpy scipy；
 3. 配置 Figma MCP（https://github.com/LucasGorgal/localfig）：在我的 MCP 配置文件中加入 localfig（command: "npx", args: ["-y", "localfig"]）；
 4. 检查配置无误后，告诉我如何在 Figma Desktop 中导入 ~/.localfig/plugin/manifest.json 开启桥接面板。
